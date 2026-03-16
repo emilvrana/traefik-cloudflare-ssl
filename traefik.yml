@@ -1,0 +1,47 @@
+# traefik.yml
+
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+# Log settings
+log:
+  level: INFO # (DEBUG, INFO, WARN, ERROR, FATAL)
+
+# Define entrypoints (HTTP, HTTPS)
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
+
+# Enable Docker provider
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false # Recommended for security
+    network: traefik_proxy
+
+# ACME (Let's Encrypt) configuration
+certificatesResolvers:
+  cloudflare:
+    acme:
+      email: "your-email@example.com" # CHANGE THIS
+      storage: "acme.json"
+      dnsChallenge:
+        provider: cloudflare
+        # credentials: "/path/to/cloudflare.ini" # Use this if you prefer a file over env vars
+        delayBeforeCheck: 0
+        resolvers:
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"
+
+# Enable the API and Dashboard (optional, but useful)
+api:
+  dashboard: true
+  insecure: false # Set to true if you are not exposing the dashboard or securing it
